@@ -1,122 +1,141 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-function App() {
-  const [count, setCount] = useState(0)
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+// Auth
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import KYCUpload from "./pages/auth/KYCUpload";
 
-      <div className="ticks"></div>
+// Investor
+import InvestorDashboard from "./pages/dashboard/InvestorDashboard";
+import BondMarketplace from "./pages/marketplace/BondMarketplace";
+import TreasuryBillsMarketplace from "./pages/marketplace/TreasuryBillsMarketplace";
+import BondDetails from "./pages/marketplace/BondDetails";
+import BondAuctions from "./pages/marketplace/BondAuctions";
+import Portfolio from "./pages/portfolio/Portfolio";
+import Wallet from "./pages/wallet/Wallet";
+import SecondaryMarket from "./pages/trading/SecondaryMarket";
+import ReinvestmentSettings from "./pages/reinvestment/ReinvestmentSettings";
+import DocumentVault from "./pages/documents/DocumentVault";
+import TaxStatements from "./pages/documents/TaxStatements";
+import InvestmentCalculator from "./pages/tools/InvestmentCalculator";
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+// Advisor / Ops / Admin
+import AdvisorDashboard from "./pages/advisor/AdvisorDashboard";
+import OpsDashboard from "./pages/ops/OpsDashboard";
+import KYCApprovalQueue from "./pages/ops/KYCApprovalQueue";
+import AdminPanel from "./pages/admin/AdminPanel";
+import AuditLogs from "./pages/admin/AuditLogs";
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+import NotFound from "./pages/NotFound";
+import "./styles/main.css";
+
+/**
+ * Restricts a route to one or more roles. Redirects unauthenticated users
+ * to /login and unauthorized users to their own dashboard.
+ */
+function ProtectedRoute({ children, roles }) {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) return <div className="page-loader">Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+
+  return children;
 }
 
-export default App
+function AppLayout() {
+  const { user } = useAuth();
+
+  return (
+    <BrowserRouter>
+      <div className="app-shell">
+        <Navbar />
+
+        <main className="app-content">
+          <Routes>
+            {/* Public */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+
+            {/* Investor */}
+            <Route path="/" element={
+              <ProtectedRoute roles={["INVESTOR"]}><InvestorDashboard /></ProtectedRoute>
+            } />
+            <Route path="/kyc" element={
+              <ProtectedRoute roles={["INVESTOR"]}><KYCUpload /></ProtectedRoute>
+            } />
+            <Route path="/bonds" element={
+              <ProtectedRoute roles={["INVESTOR"]}><BondMarketplace /></ProtectedRoute>
+            } />
+            <Route path="/treasury-bills" element={
+              <ProtectedRoute roles={["INVESTOR"]}><TreasuryBillsMarketplace /></ProtectedRoute>
+            } />
+            <Route path="/bonds/:id" element={
+              <ProtectedRoute roles={["INVESTOR"]}><BondDetails /></ProtectedRoute>
+            } />
+            <Route path="/auctions" element={
+              <ProtectedRoute roles={["INVESTOR"]}><BondAuctions /></ProtectedRoute>
+            } />
+            <Route path="/portfolio" element={
+              <ProtectedRoute roles={["INVESTOR"]}><Portfolio /></ProtectedRoute>
+            } />
+            <Route path="/wallet" element={
+              <ProtectedRoute roles={["INVESTOR"]}><Wallet /></ProtectedRoute>
+            } />
+            <Route path="/secondary-market" element={
+              <ProtectedRoute roles={["INVESTOR"]}><SecondaryMarket /></ProtectedRoute>
+            } />
+            <Route path="/reinvestment" element={
+              <ProtectedRoute roles={["INVESTOR"]}><ReinvestmentSettings /></ProtectedRoute>
+            } />
+            <Route path="/documents" element={
+              <ProtectedRoute roles={["INVESTOR"]}><DocumentVault /></ProtectedRoute>
+            } />
+            <Route path="/tax-statements" element={
+              <ProtectedRoute roles={["INVESTOR"]}><TaxStatements /></ProtectedRoute>
+            } />
+            <Route path="/calculator" element={<InvestmentCalculator />} />
+
+            {/* Advisor */}
+            <Route path="/advisor" element={
+              <ProtectedRoute roles={["ADVISOR"]}><AdvisorDashboard /></ProtectedRoute>
+            } />
+
+            {/* Operations */}
+            <Route path="/ops" element={
+              <ProtectedRoute roles={["OPS", "ADMIN"]}><OpsDashboard /></ProtectedRoute>
+            } />
+            <Route path="/ops/kyc-queue" element={
+              <ProtectedRoute roles={["OPS", "ADMIN"]}><KYCApprovalQueue /></ProtectedRoute>
+            } />
+
+            {/* Super Admin */}
+            <Route path="/admin" element={
+              <ProtectedRoute roles={["ADMIN"]}><AdminPanel /></ProtectedRoute>
+            } />
+            <Route path="/admin/audit-logs" element={
+              <ProtectedRoute roles={["ADMIN"]}><AuditLogs /></ProtectedRoute>
+            } />
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+
+        <Footer />
+      </div>
+    </BrowserRouter>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppLayout />
+    </AuthProvider>
+  );
+}
