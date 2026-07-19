@@ -1,16 +1,26 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
-// Auth
+// Layouts
+import WebsiteLayout from "./components/website/WebsiteLayout";
+import PortalLayout from "./components/portal/PortalLayout";
+import AdminPortalHome from "./components/portal/AdminPortalHome";
+
+// Website (public)
+import Home from "./pages/website/Home";
+import About from "./pages/website/About";
+import Services from "./pages/website/Services";
+import Contact from "./pages/website/Contact";
+import InvestmentCalculator from "./pages/website/InvestmentCalculator";
+
+// Auth (public, rendered inside the website layout)
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import KYCUpload from "./pages/auth/KYCUpload";
 
-// Investor
+// User Portal
 import InvestorDashboard from "./pages/dashboard/InvestorDashboard";
 import BondMarketplace from "./pages/marketplace/BondMarketplace";
 import TreasuryBillsMarketplace from "./pages/marketplace/TreasuryBillsMarketplace";
@@ -22,13 +32,11 @@ import SecondaryMarket from "./pages/trading/SecondaryMarket";
 import ReinvestmentSettings from "./pages/reinvestment/ReinvestmentSettings";
 import DocumentVault from "./pages/documents/DocumentVault";
 import TaxStatements from "./pages/documents/TaxStatements";
-import InvestmentCalculator from "./pages/tools/InvestmentCalculator";
 
-// Advisor / Ops / Admin
+// Admin Portal (Advisor / Ops / Admin)
 import AdvisorDashboard from "./pages/advisor/AdvisorDashboard";
 import OpsDashboard from "./pages/ops/OpsDashboard";
 import KYCApprovalQueue from "./pages/ops/KYCApprovalQueue";
-import AdminPanel from "./pages/admin/AdminPanel";
 import AuditLogs from "./pages/admin/AuditLogs";
 
 import NotFound from "./pages/NotFound";
@@ -36,7 +44,7 @@ import "./styles/main.css";
 
 /**
  * Restricts a route to one or more roles. Redirects unauthenticated users
- * to /login and unauthorized users to their own dashboard.
+ * to /login and unauthorized users back to the public website.
  */
 function ProtectedRoute({ children, roles }) {
   const { user, isLoading } = useAuth();
@@ -48,94 +56,64 @@ function ProtectedRoute({ children, roles }) {
   return children;
 }
 
-function AppLayout() {
-  const { user } = useAuth();
-
-  return (
-    <BrowserRouter>
-      <div className="app-shell">
-        <Navbar />
-
-        <main className="app-content">
-          <Routes>
-            {/* Public */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-
-            {/* Investor */}
-            <Route path="/" element={
-              <ProtectedRoute roles={["INVESTOR"]}><InvestorDashboard /></ProtectedRoute>
-            } />
-            <Route path="/kyc" element={
-              <ProtectedRoute roles={["INVESTOR"]}><KYCUpload /></ProtectedRoute>
-            } />
-            <Route path="/bonds" element={
-              <ProtectedRoute roles={["INVESTOR"]}><BondMarketplace /></ProtectedRoute>
-            } />
-            <Route path="/treasury-bills" element={
-              <ProtectedRoute roles={["INVESTOR"]}><TreasuryBillsMarketplace /></ProtectedRoute>
-            } />
-            <Route path="/bonds/:id" element={
-              <ProtectedRoute roles={["INVESTOR"]}><BondDetails /></ProtectedRoute>
-            } />
-            <Route path="/auctions" element={
-              <ProtectedRoute roles={["INVESTOR"]}><BondAuctions /></ProtectedRoute>
-            } />
-            <Route path="/portfolio" element={
-              <ProtectedRoute roles={["INVESTOR"]}><Portfolio /></ProtectedRoute>
-            } />
-            <Route path="/wallet" element={
-              <ProtectedRoute roles={["INVESTOR"]}><Wallet /></ProtectedRoute>
-            } />
-            <Route path="/secondary-market" element={
-              <ProtectedRoute roles={["INVESTOR"]}><SecondaryMarket /></ProtectedRoute>
-            } />
-            <Route path="/reinvestment" element={
-              <ProtectedRoute roles={["INVESTOR"]}><ReinvestmentSettings /></ProtectedRoute>
-            } />
-            <Route path="/documents" element={
-              <ProtectedRoute roles={["INVESTOR"]}><DocumentVault /></ProtectedRoute>
-            } />
-            <Route path="/tax-statements" element={
-              <ProtectedRoute roles={["INVESTOR"]}><TaxStatements /></ProtectedRoute>
-            } />
-            <Route path="/calculator" element={<InvestmentCalculator />} />
-
-            {/* Advisor */}
-            <Route path="/advisor" element={
-              <ProtectedRoute roles={["ADVISOR"]}><AdvisorDashboard /></ProtectedRoute>
-            } />
-
-            {/* Operations */}
-            <Route path="/ops" element={
-              <ProtectedRoute roles={["OPS", "ADMIN"]}><OpsDashboard /></ProtectedRoute>
-            } />
-            <Route path="/ops/kyc-queue" element={
-              <ProtectedRoute roles={["OPS", "ADMIN"]}><KYCApprovalQueue /></ProtectedRoute>
-            } />
-
-            {/* Super Admin */}
-            <Route path="/admin" element={
-              <ProtectedRoute roles={["ADMIN"]}><AdminPanel /></ProtectedRoute>
-            } />
-            <Route path="/admin/audit-logs" element={
-              <ProtectedRoute roles={["ADMIN"]}><AuditLogs /></ProtectedRoute>
-            } />
-
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-
-        <Footer />
-      </div>
-    </BrowserRouter>
-  );
-}
-
 export default function App() {
   return (
     <AuthProvider>
-      <AppLayout />
+      <BrowserRouter>
+        <Routes>
+          {/* ---------- Module 1: Public Website ---------- */}
+          <Route element={<WebsiteLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/calculator" element={<InvestmentCalculator />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
+
+          {/* ---------- Module 2: User Portal (investor) ---------- */}
+          <Route
+            path="/portal"
+            element={
+              <ProtectedRoute roles={["INVESTOR"]}>
+                <PortalLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<InvestorDashboard />} />
+            <Route path="kyc" element={<KYCUpload />} />
+            <Route path="bonds" element={<BondMarketplace />} />
+            <Route path="bonds/:id" element={<BondDetails />} />
+            <Route path="treasury-bills" element={<TreasuryBillsMarketplace />} />
+            <Route path="auctions" element={<BondAuctions />} />
+            <Route path="portfolio" element={<Portfolio />} />
+            <Route path="wallet" element={<Wallet />} />
+            <Route path="secondary-market" element={<SecondaryMarket />} />
+            <Route path="reinvestment" element={<ReinvestmentSettings />} />
+            <Route path="documents" element={<DocumentVault />} />
+            <Route path="tax-statements" element={<TaxStatements />} />
+          </Route>
+
+          {/* ---------- Module 3: Admin Portal (advisor / ops / admin) ---------- */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute roles={["ADVISOR", "OPS", "ADMIN"]}>
+                <PortalLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<AdminPortalHome />} />
+            <Route path="advisor" element={<ProtectedRoute roles={["ADVISOR"]}><AdvisorDashboard /></ProtectedRoute>} />
+            <Route path="ops" element={<ProtectedRoute roles={["OPS", "ADMIN"]}><OpsDashboard /></ProtectedRoute>} />
+            <Route path="ops/kyc-queue" element={<ProtectedRoute roles={["OPS", "ADMIN"]}><KYCApprovalQueue /></ProtectedRoute>} />
+            <Route path="audit-logs" element={<ProtectedRoute roles={["ADMIN"]}><AuditLogs /></ProtectedRoute>} />
+          </Route>
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
     </AuthProvider>
   );
 }

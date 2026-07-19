@@ -1,4 +1,4 @@
-/********** Template CSS (Finanza) **********/
+/********** Template CSS **********/
 :root {
     --primary: #355EFC;
     --secondary: #E93C05;
@@ -194,7 +194,7 @@ h6,
         position: relative;
         min-height: 450px;
     }
-
+    
     #header-carousel .carousel-item img {
         position: absolute;
         width: 100%;
@@ -206,7 +206,7 @@ h6,
 .page-header {
     padding-top: 12rem;
     padding-bottom: 6rem;
-    background: url(/img/header.jpg) top left no-repeat;
+    background: url(../img/header.jpg) top left no-repeat;
     background-size: cover;
 }
 
@@ -222,7 +222,7 @@ h6,
 
 /*** Facts ***/
 .facts {
-    background: linear-gradient(rgba(53, 94, 252, .95), rgba(53, 94, 252, .95)), url(/img/bg.png);
+    background: linear-gradient(rgba(53, 94, 252, .95), rgba(53, 94, 252, .95)), url(../img/bg.png);
 }
 
 
@@ -238,7 +238,7 @@ h6,
     height: 50%;
     top: 0;
     left: 0;
-    background: linear-gradient(rgba(53, 94, 252, .95), rgba(53, 94, 252, .95)), url(/img/bg.png);
+    background: linear-gradient(rgba(53, 94, 252, .95), rgba(53, 94, 252, .95)), url(../img/bg.png);
     z-index: -1;
 }
 
@@ -539,44 +539,3 @@ h6,
 .copyright a:hover {
     color: var(--primary);
 }
-
-/*** App-specific additions ***/
-.app-content {
-    padding-top: 128px; /* clears the fixed navbar; drop to ~80px on pages without the top-bar row */
-}
-
-@media (max-width: 991.98px) {
-    .app-content {
-        padding-top: 80px;
-    }
-}
-
-.page-loader {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
-    font-weight: 500;
-    color: var(--tertiary);
-}
-
-.stat-box h1 {
-    line-height: 1;
-}
-
-.table thead th {
-    border-bottom: 2px solid var(--light);
-    color: var(--dark);
-    font-weight: 600;
-}
-
-.badge-status {
-    padding: 6px 14px;
-    border-radius: 30px;
-    font-weight: 500;
-    font-size: .85rem;
-}
-
-.badge-status.pending { background: var(--light); color: var(--primary); }
-.badge-status.approved { background: #DFF7E4; color: #1E9E4A; }
-.badge-status.rejected { background: #FCE2DC; color: var(--secondary); }
